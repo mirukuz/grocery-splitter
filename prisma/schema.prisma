@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id          String        @id @default(uuid())
+  title       String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  receipts    Receipt[]
+  participants Person[]     @relation("SessionParticipants")
+}
+
+model Receipt {
+  id        String        @id @default(uuid())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  imageUrl  String?
+  rawText   String?
+  date      String?
+  total     Float?
+  items     ReceiptItem[]
+  session   Session       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String
+}
+
+model ReceiptItem {
+  id        String           @id @default(uuid())
+  name      String
+  price     Float
+  notes     String?
+  receipt   Receipt          @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  receiptId String
+  payers    PersonOnItem[]
+}
+
+model Person {
+  id        String         @id @default(uuid())
+  name      String
+  createdAt DateTime       @default(now())
+  items     PersonOnItem[]
+  sessions  Session[]      @relation("SessionParticipants")
+}
+
+model PersonOnItem {
+  person       Person      @relation(fields: [personId], references: [id], onDelete: Cascade)
+  personId     String
+  item         ReceiptItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId       String
+  assignedAt   DateTime    @default(now())
+
+  @@id([personId, itemId])
+}

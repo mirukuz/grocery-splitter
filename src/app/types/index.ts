@@ -18,4 +18,14 @@ export interface Receipt {
   rawText?: string;
   date?: string;
   total?: number;
+  sessionId: string;
+}
+
+export interface Session {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  receipts: Receipt[];
+  participants: Person[];
 }

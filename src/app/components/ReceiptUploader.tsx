@@ -6,9 +6,13 @@ import Image from 'next/image';
 import { processReceiptImage, createReceiptFromOCR } from '../utils/ocrUtils';
 import useReceiptStore from '../store/receiptStore';
 
-export default function ReceiptUploader() {
+interface ReceiptUploaderProps {
+  sessionId: string;
+}
+
+export default function ReceiptUploader({ sessionId }: ReceiptUploaderProps) {
   const [preview, setPreview] = useState<string | null>(null);
-  const { setReceipt, setIsProcessing, setError, isProcessing } = useReceiptStore();
+  const { saveReceipt, setIsProcessing, setError, isProcessing } = useReceiptStore();
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
@@ -33,14 +37,18 @@ export default function ReceiptUploader() {
       const { text, items } = await processReceiptImage(file);
       const receipt = createReceiptFromOCR(text, items, objectUrl);
       
-      setReceipt(receipt);
+      // Add sessionId to the receipt data
+      await saveReceipt({
+        ...receipt,
+        sessionId
+      });
       setIsProcessing(false);
     } catch (error) {
       console.error('Error processing receipt:', error);
       setError('Failed to process receipt. Please try again.');
       setIsProcessing(false);
     }
-  }, [setReceipt, setIsProcessing, setError]);
+  }, [saveReceipt, setIsProcessing, setError, sessionId]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
