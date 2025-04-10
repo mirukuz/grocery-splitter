@@ -36,10 +36,17 @@ export default function SessionsPage() {
 
   const calculateTotal = (sessionId: string) => {
     const session = sessions.find(s => s.id === sessionId);
-    if (!session) return 0;
+    if (!session || !session.receipts) return 0;
     
     return session.receipts.reduce((total, receipt) => {
-      return total + (receipt.total || 0);
+      // Sum up all item prices in the receipt instead of using receipt.total
+      if (!receipt || !receipt.items) return total;
+      
+      const receiptTotal = receipt.items.reduce((itemsTotal, item) => {
+        return itemsTotal + (item.price || 0);
+      }, 0);
+      
+      return total + receiptTotal;
     }, 0);
   };
 
@@ -137,9 +144,6 @@ export default function SessionsPage() {
                   </p>
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Receipts: {session.receipts.length}
-                      </p>
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         People: {session.participants.length}
                       </p>

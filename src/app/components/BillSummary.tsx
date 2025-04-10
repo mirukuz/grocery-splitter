@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from 'react';
 import useReceiptStore from '../store/receiptStore';
 
 type PersonTotal = {
@@ -10,7 +11,12 @@ type PersonTotal = {
 };
 
 export default function BillSummary() {
-  const { receipt, people } = useReceiptStore();
+  const { receipt, people, fetchPeople } = useReceiptStore();
+  
+  // Ensure people data is loaded when the component mounts
+  useEffect(() => {
+    fetchPeople();
+  }, [fetchPeople]);
 
   if (!receipt || !receipt.items || receipt.items.length === 0 || people.length === 0) {
     return null;
@@ -19,7 +25,7 @@ export default function BillSummary() {
   // Calculate what each person owes
   const personTotals: PersonTotal[] = people.map(person => {
     const personItems = receipt.items
-      .filter(item => item.payers.includes(person.id))
+      .filter(item => item.payers && item.payers.includes(person.id))
       .map(item => {
         const numPayers = item.payers.length || 1; // Avoid division by zero
         const share = item.price / numPayers;

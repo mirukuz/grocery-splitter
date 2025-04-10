@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Image from 'next/image';
 import { processReceiptImage, createReceiptFromOCR } from '../utils/ocrUtils';
@@ -13,6 +13,21 @@ interface ReceiptUploaderProps {
 export default function ReceiptUploader({ sessionId }: ReceiptUploaderProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const { saveReceipt, setIsProcessing, setError, isProcessing } = useReceiptStore();
+
+  // Reset preview when component mounts (on page refresh)
+  useEffect(() => {
+    setPreview(null);
+  }, []);
+
+  // Clean up object URLs when preview changes or component unmounts
+  useEffect(() => {
+    // Return cleanup function
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
@@ -35,7 +50,8 @@ export default function ReceiptUploader({ sessionId }: ReceiptUploaderProps) {
       setError(null);
       
       const { text, items } = await processReceiptImage(file);
-      const receipt = createReceiptFromOCR(text, items, objectUrl);
+      // Don't pass imageUrl to createReceiptFromOCR to avoid storing it in the database
+      const receipt = createReceiptFromOCR(text, items);
       
       // Add sessionId to the receipt data
       await saveReceipt({

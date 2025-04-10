@@ -8,10 +8,8 @@ export async function GET() {
       include: {
         participants: true,
         receipts: {
-          select: {
-            id: true,
-            total: true,
-            date: true,
+          include: {
+            items: true
           }
         }
       },

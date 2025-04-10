@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { TrashIcon, PencilIcon, PlusIcon, UserPlusIcon, UserMinusIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, PencilIcon, UserPlusIcon, UserMinusIcon } from '@heroicons/react/24/outline';
 import useReceiptStore from '../store/receiptStore';
 import { ReceiptItem } from '../types';
 
@@ -153,7 +153,8 @@ export default function ReceiptItemsList() {
                       <div className="flex flex-wrap gap-2">
                         {people.length > 0 ? (
                           people.map((person) => {
-                            const isPayer = item.payers.includes(person.id);
+                            // Add a check to ensure item.payers exists before using includes
+                            const isPayer = item.payers && item.payers.includes(person.id);
                             return (
                               <button
                                 key={person.id}

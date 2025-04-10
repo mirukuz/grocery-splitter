@@ -35,7 +35,8 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { sessionId, imageUrl, rawText, date, total, items } = body;
+    const { sessionId, rawText, date, total, items } = body;
+    // imageUrl is intentionally not destructured as we don't want to store it
 
     if (!sessionId) {
       return NextResponse.json(
@@ -44,11 +45,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create receipt with nested items
+    // Create receipt with nested items - don't store imageUrl
     const receipt = await prisma.receipt.create({
       data: {
         sessionId,
-        imageUrl,
+        // imageUrl is intentionally omitted to avoid storing it in the database
         rawText,
         date,
         total,

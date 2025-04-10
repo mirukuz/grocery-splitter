@@ -37,6 +37,25 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
 
+    // Get the item with its receipt and session information
+    const item = await prisma.receiptItem.findUnique({
+      where: { id: itemId },
+      include: {
+        receipt: {
+          include: {
+            session: true
+          }
+        }
+      }
+    });
+
+    if (!item || !item.receipt || !item.receipt.session) {
+      return NextResponse.json(
+        { error: 'Item, receipt, or session not found' },
+        { status: 404 }
+      );
+    }
+
     // Create the assignment
     const assignment = await prisma.personOnItem.create({
       data: {
@@ -48,6 +67,31 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         item: true
       }
     });
+
+    // Add the person as a participant to the session if they're not already
+    const sessionId = item.receipt.sessionId;
+    
+    // Get the session to check if the person is already a participant
+    const session = await prisma.session.findUnique({
+      where: { id: sessionId },
+      include: { participants: true }
+    });
+    
+    if (session) {
+      const isParticipant = session.participants.some(p => p.id === personId);
+      
+      if (!isParticipant) {
+        // Add person to session participants
+        await prisma.session.update({
+          where: { id: sessionId },
+          data: {
+            participants: {
+              connect: { id: personId }
+            }
+          }
+        });
+      }
+    }
     
     return NextResponse.json(assignment);
   } catch (error) {

@@ -64,7 +64,12 @@ export const parseReceiptItems = (text: string): ReceiptItem[] => {
 };
 
 // Create a receipt object from processed data
-export const createReceiptFromOCR = (text: string, items: ReceiptItem[], imageUrl?: string): Receipt => {
+export const createReceiptFromOCR = (text: string, items: Array<{id: string; name: string; price: number; notes: string}>, imageUrl?: string): Omit<Receipt, 'sessionId'> => {
+  // Ensure each item has a payers array initialized
+  const itemsWithPayers = items.map(item => ({
+    ...item,
+    payers: [] as string[] // Initialize empty payers array for each item
+  }));
   // Try to extract the total
   let total: number | undefined;
   const totalRegex = /total\s*\$?\s*(\d+\.\d{2})/i;
@@ -88,7 +93,7 @@ export const createReceiptFromOCR = (text: string, items: ReceiptItem[], imageUr
   
   return {
     id: crypto.randomUUID(),
-    items,
+    items: itemsWithPayers,
     rawText: text,
     imageUrl,
     date,

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
 import useSessionStore from '../../store/sessionStore';
 import useReceiptStore from '../../store/receiptStore';
 import { receiptService } from '../../services/api';
@@ -28,6 +27,13 @@ export default function SessionDetail() {
       fetchPeople(); // Fetch people when the session page loads
     }
   }, [sessionId, fetchSession, fetchPeople]);
+  
+  // Fetch people data again when switching to the Summary tab
+  useEffect(() => {
+    if (activeTab === 'summary') {
+      fetchPeople();
+    }
+  }, [activeTab, fetchPeople]);
 
   const handleReset = () => {
     if (confirm('Are you sure you want to reset? All data will be lost.')) {
@@ -114,27 +120,7 @@ export default function SessionDetail() {
               {activeTab === 'upload' && (
                 <div>
                   <ReceiptUploader sessionId={sessionId} />
-                  {receipt.imageUrl && (
-                    <div className="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                      <h2 className="text-xl font-semibold mb-4">Receipt Image</h2>
-                      <div className="relative w-full h-96">
-                        <Image 
-                          src={receipt.imageUrl} 
-                          alt="Receipt" 
-                          fill 
-                          className="object-contain rounded-md" 
-                        />
-                      </div>
-                      {receipt.rawText && (
-                        <div className="mt-6">
-                          <h3 className="text-lg font-medium mb-2">Extracted Text</h3>
-                          <pre className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md overflow-auto text-sm whitespace-pre-wrap">
-                            {receipt.rawText}
-                          </pre>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  {/* We no longer display the receipt image and extracted text here */}
                 </div>
               )}
 
