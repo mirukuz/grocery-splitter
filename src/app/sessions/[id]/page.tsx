@@ -18,15 +18,16 @@ export default function SessionDetail() {
   const sessionId = params.id as string;
   
   const { currentSession, fetchSession, error: sessionError } = useSessionStore();
-  const { receipt, error: receiptError, reset, setReceipt, setError } = useReceiptStore();
+  const { receipt, error: receiptError, reset, setReceipt, setError, fetchPeople } = useReceiptStore();
   
   const [activeTab, setActiveTab] = useState<'upload' | 'items' | 'people' | 'summary'>('upload');
 
   useEffect(() => {
     if (sessionId) {
       fetchSession(sessionId);
+      fetchPeople(); // Fetch people when the session page loads
     }
-  }, [sessionId, fetchSession]);
+  }, [sessionId, fetchSession, fetchPeople]);
 
   const handleReset = () => {
     if (confirm('Are you sure you want to reset? All data will be lost.')) {

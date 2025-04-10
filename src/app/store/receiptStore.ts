@@ -198,7 +198,8 @@ const useReceiptStore = create<ReceiptState>((set, get) => ({
       const state = get();
       if (state.receipt) {
         const updatedReceipt = await receiptService.getReceipt(state.receipt.id);
-        set({ receipt: updatedReceipt });
+        // Use setReceipt to properly transform the API response
+        get().setReceipt(updatedReceipt);
       }
     } catch (error) {
       console.error('Error assigning payer:', error);
@@ -214,7 +215,8 @@ const useReceiptStore = create<ReceiptState>((set, get) => ({
       const state = get();
       if (state.receipt) {
         const updatedReceipt = await receiptService.getReceipt(state.receipt.id);
-        set({ receipt: updatedReceipt });
+        // Use setReceipt to properly transform the API response
+        get().setReceipt(updatedReceipt);
       }
     } catch (error) {
       console.error('Error removing payer:', error);

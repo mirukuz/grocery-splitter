@@ -17,7 +17,19 @@ export default function PeopleManager({ sessionId }: PeopleManagerProps) {
   // Initialize people from the current session when it loads
   useEffect(() => {
     if (currentSession?.participants) {
-      // TODO: Sync session participants with receipt store people
+      // Sync session participants with receipt store people
+      const { people } = useReceiptStore.getState();
+      const sessionParticipants = currentSession.participants;
+      
+      // Add any session participants that aren't in the receipt store
+      for (const participant of sessionParticipants) {
+        if (!people.some(p => p.id === participant.id)) {
+          // Add to receipt store without making an API call since they already exist
+          useReceiptStore.setState(state => ({
+            people: [...state.people, participant]
+          }));
+        }
+      }
     }
   }, [currentSession]);
 
