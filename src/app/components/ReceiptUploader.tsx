@@ -5,12 +5,14 @@ import { useDropzone } from 'react-dropzone';
 import Image from 'next/image';
 import { processReceiptImage, createReceiptFromOCR } from '../utils/ocrUtils';
 import useReceiptStore from '../store/receiptStore';
+import { receiptService } from '../services/api';
 
 interface ReceiptUploaderProps {
   sessionId: string;
+  onReceiptUploaded?: () => void; // Callback for when a receipt is successfully uploaded
 }
 
-export default function ReceiptUploader({ sessionId }: ReceiptUploaderProps) {
+export default function ReceiptUploader({ sessionId, onReceiptUploaded }: ReceiptUploaderProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const { saveReceipt, setIsProcessing, setError, isProcessing } = useReceiptStore();
 
@@ -58,13 +60,26 @@ export default function ReceiptUploader({ sessionId }: ReceiptUploaderProps) {
         ...receipt,
         sessionId
       });
+      
+      // Refresh the receipt data to ensure payers are properly loaded
+      // This is necessary because the server assigns all people as payers
+      const currentReceipt = useReceiptStore.getState().receipt;
+      if (currentReceipt && currentReceipt.id) {
+        const refreshedReceipt = await receiptService.getReceipt(currentReceipt.id);
+        useReceiptStore.getState().setReceipt(refreshedReceipt);
+        
+        // Call the callback if provided to notify that a receipt was uploaded
+        if (onReceiptUploaded) {
+          onReceiptUploaded();
+        }
+      }
       setIsProcessing(false);
     } catch (error) {
       console.error('Error processing receipt:', error);
       setError('Failed to process receipt. Please try again.');
       setIsProcessing(false);
     }
-  }, [saveReceipt, setIsProcessing, setError, sessionId]);
+  }, [saveReceipt, setIsProcessing, setError, sessionId, onReceiptUploaded]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

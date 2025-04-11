@@ -45,6 +45,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get all people to assign as payers to each item by default
+    const people = await prisma.person.findMany();
+    const peopleIds = people.map(person => ({ id: person.id }));
+
     // Create receipt with nested items - don't store imageUrl
     const receipt = await prisma.receipt.create({
       data: {
@@ -57,12 +61,28 @@ export async function POST(request: NextRequest) {
           create: items ? items.map((item: { name: string; price: number; notes?: string }) => ({
             name: item.name,
             price: item.price,
-            notes: item.notes || ''
+            notes: item.notes || '',
+            // Connect all people as payers to this item
+            payers: peopleIds.length > 0 ? {
+              create: peopleIds.map(person => ({
+                person: {
+                  connect: { id: person.id }
+                }
+              }))
+            } : undefined
           })) : []
         }
       },
       include: {
-        items: true
+        items: {
+          include: {
+            payers: {
+              include: {
+                person: true
+              }
+            }
+          }
+        }
       }
     });
 

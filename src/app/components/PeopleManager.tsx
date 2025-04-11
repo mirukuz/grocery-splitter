@@ -65,39 +65,10 @@ export default function PeopleManager({ sessionId }: PeopleManagerProps) {
     }
   };
 
-  // Function to automatically assign all people to all items (split bill evenly)
-  const handleSplitEvenly = async () => {
-    if (!receipt || !receipt.items || receipt.items.length === 0 || people.length === 0) {
-      return;
-    }
-    
-    try {
-      // For each item in the receipt, assign all people as payers
-      for (const item of receipt.items) {
-        for (const person of people) {
-          // Only add if not already a payer
-          if (!item.payers.includes(person.id)) {
-            await assignPayerToItem(item.id, person.id);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error splitting bill evenly:', error);
-    }
-  };
-
   return (
     <div className="w-full max-w-md mx-auto mt-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">People Splitting the Bill</h2>
-        {receipt && receipt.items && receipt.items.length > 0 && people.length > 0 && (
-          <button
-            onClick={handleSplitEvenly}
-            className="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-          >
-            Split Evenly
-          </button>
-        )}
       </div>
       
       <form onSubmit={handleAddPerson} className="flex mb-4">
