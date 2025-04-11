@@ -61,7 +61,9 @@ export default function ReceiptItemsList() {
   return (
     <div className="w-full max-w-4xl mx-auto mt-6">
       <h2 className="text-xl font-semibold mb-4">Receipt Items</h2>
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+      
+      {/* Table view for medium and large screens */}
+      <div className="hidden md:block bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
@@ -200,6 +202,131 @@ export default function ReceiptItemsList() {
             ))}
           </tbody>
         </table>
+      </div>
+      
+      {/* Card view for small screens (mobile) */}
+      <div className="md:hidden space-y-4">
+        {receipt.items.map((item) => (
+          <div key={item.id} className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+            {editingItemId === item.id ? (
+              // Edit mode - mobile
+              <div className="p-4 space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Item</label>
+                  <input
+                    type="text"
+                    value={newItemName}
+                    onChange={(e) => setNewItemName(e.target.value)}
+                    className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Price</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={newItemPrice}
+                    onChange={(e) => setNewItemPrice(e.target.value)}
+                    className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Notes</label>
+                  <input
+                    type="text"
+                    value={newItemNote}
+                    onChange={(e) => setNewItemNote(e.target.value)}
+                    placeholder="Add notes"
+                    className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                  />
+                </div>
+                
+                <div className="flex justify-end space-x-2 pt-2">
+                  <button
+                    onClick={() => handleSaveEdit(item.id)}
+                    className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={handleCancelEdit}
+                    className="px-3 py-1 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // View mode - mobile
+              <div>
+                <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+                  <div>
+                    <h3 className="text-base font-medium text-gray-900 dark:text-white">{item.name}</h3>
+                    <p className="text-sm text-gray-900 dark:text-white font-semibold">${item.price.toFixed(2)}</p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleEditItem(item)}
+                      className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    >
+                      <PencilIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+                
+                {item.notes && (
+                  <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <span className="font-medium text-gray-700 dark:text-gray-300">Notes: </span>
+                      {item.notes}
+                    </p>
+                  </div>
+                )}
+                
+                <div className="px-4 py-3">
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Payers</p>
+                  <div className="flex flex-wrap gap-2">
+                    {people.length > 0 ? (
+                      people.map((person) => {
+                        // Add a check to ensure item.payers exists before using includes
+                        const isPayer = item.payers && item.payers.includes(person.id);
+                        return (
+                          <button
+                            key={person.id}
+                            onClick={() => togglePayer(item.id, person.id, isPayer)}
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isPayer
+                              ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                              }`}
+                          >
+                            {isPayer ? (
+                              <UserMinusIcon className="w-3 h-3 mr-1" />
+                            ) : (
+                              <UserPlusIcon className="w-3 h-3 mr-1" />
+                            )}
+                            {person.name}
+                          </button>
+                        );
+                      })
+                    ) : (
+                      <span className="text-sm text-gray-500 dark:text-gray-400 italic">
+                        Add people first
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
