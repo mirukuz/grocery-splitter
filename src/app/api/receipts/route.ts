@@ -1,10 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 
-// GET /api/receipts - Get all receipts
-export async function GET() {
+// GET /api/receipts - Get all receipts or receipts for a specific session
+export async function GET(request: NextRequest) {
   try {
-    const receipts = await prisma.receipt.findMany({
+    const { searchParams } = new URL(request.url);
+    const sessionId = searchParams.get('sessionId');
+    
+    // Build the query with proper typing
+    const query: {
+      where?: { sessionId: string };
+      include: {
+        items: {
+          include: {
+            payers: {
+              include: {
+                person: boolean
+              }
+            }
+          }
+        }
+      };
+      orderBy: {
+        createdAt: 'desc' | 'asc'
+      }
+    } = {
       include: {
         items: {
           include: {
@@ -19,7 +39,14 @@ export async function GET() {
       orderBy: {
         createdAt: 'desc'
       }
-    });
+    };
+    
+    // Add sessionId filter if provided
+    if (sessionId) {
+      query.where = { sessionId };
+    }
+    
+    const receipts = await prisma.receipt.findMany(query);
 
     return NextResponse.json(receipts);
   } catch (error) {

@@ -25,6 +25,7 @@ interface ReceiptState {
   
   // Actions
   fetchPeople: () => Promise<void>;
+  fetchReceiptForSession: (sessionId: string) => Promise<void>;
   setReceipt: (receipt: ApiReceipt | Receipt) => void;
   saveReceipt: (receiptData: { sessionId: string; imageUrl?: string; rawText?: string; date?: string; total?: number; items?: Array<{ name: string; price: number; notes?: string }> }) => Promise<void>;
   addItem: (item: Omit<ReceiptItem, 'id'>) => Promise<void>;
@@ -52,6 +53,26 @@ const useReceiptStore = create<ReceiptState>((set, get) => ({
     } catch (error) {
       console.error('Error fetching people:', error);
       set({ error: 'Failed to fetch people' });
+    }
+  },
+  
+  fetchReceiptForSession: async (sessionId) => {
+    try {
+      set({ isProcessing: true, error: null });
+      // Get all receipts for the session
+      const receipts = await receiptService.getReceiptsForSession(sessionId);
+      
+      // If there are receipts, set the most recent one as the active receipt
+      if (receipts && receipts.length > 0) {
+        // Sort by creation date (newest first) and take the first one
+        const latestReceipt = receipts[0];
+        const fullReceipt = await receiptService.getReceipt(latestReceipt.id);
+        get().setReceipt(fullReceipt);
+      }
+      set({ isProcessing: false });
+    } catch (error) {
+      console.error('Error fetching receipt for session:', error);
+      set({ error: 'Failed to fetch receipt for session', isProcessing: false });
     }
   },
   
@@ -95,8 +116,32 @@ const useReceiptStore = create<ReceiptState>((set, get) => ({
   addItem: async (item) => {
     try {
       const state = get();
-      if (!state.receipt) return;
       
+      // If there's no active receipt, create a temporary one in memory
+      if (!state.receipt) {
+        // Create a temporary receipt with the new item
+        const tempReceipt: Receipt = {
+          id: 'temp-' + crypto.randomUUID(),
+          items: [
+            {
+              ...item,
+              id: crypto.randomUUID(),
+              payers: []
+            }
+          ],
+          sessionId: 'temp-session', // Required property
+          // Optional properties
+          imageUrl: undefined,
+          rawText: undefined,
+          date: undefined,
+          total: undefined
+        };
+        
+        set({ receipt: tempReceipt });
+        return;
+      }
+      
+      // If there is an active receipt, add the item to it via the API
       const newItem = await itemService.createItem({
         ...item,
         receiptId: state.receipt.id

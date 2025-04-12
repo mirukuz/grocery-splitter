@@ -90,9 +90,6 @@ export default function BillSummary() {
                           <span className="text-gray-600 dark:text-gray-400">{item.name}</span>
                           <span className="text-gray-900 dark:text-white">
                             ${item.share.toFixed(2)}
-                            {item.share < item.price && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400"> (split)</span>
-                            )}
                           </span>
                         </li>
                       ))}

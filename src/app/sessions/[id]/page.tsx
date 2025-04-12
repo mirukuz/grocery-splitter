@@ -16,7 +16,7 @@ export default function SessionDetail() {
   const sessionId = params.id as string;
   
   const { currentSession, fetchSession, error: sessionError } = useSessionStore();
-  const { receipt, error: receiptError, reset, fetchPeople } = useReceiptStore();
+  const { receipt, error: receiptError, reset, fetchPeople, fetchReceiptForSession } = useReceiptStore();
   
   const [activeTab, setActiveTab] = useState<'upload' | 'items' | 'people' | 'summary'>('upload');
 
@@ -24,8 +24,9 @@ export default function SessionDetail() {
     if (sessionId) {
       fetchSession(sessionId);
       fetchPeople(); // Fetch people when the session page loads
+      fetchReceiptForSession(sessionId); // Load the latest receipt for this session
     }
-  }, [sessionId, fetchSession, fetchPeople]);
+  }, [sessionId, fetchSession, fetchPeople, fetchReceiptForSession]);
   
   // Fetch people data again when switching to the Summary tab
   useEffect(() => {

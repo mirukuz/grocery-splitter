@@ -11,8 +11,11 @@ export default function ReceiptItemsList() {
   const [newItemName, setNewItemName] = useState('');
   const [newItemPrice, setNewItemPrice] = useState('');
   const [newItemNote, setNewItemNote] = useState('');
-
-  if (!receipt || !receipt.items || receipt.items.length === 0) {
+  console.log(receipt);
+  // Check if there are any items to display
+  const hasItems = receipt && receipt.items && receipt.items.length > 0;
+  
+  if (!hasItems) {
     return (
       <div className="text-center py-8">
         <p className="text-gray-500 dark:text-gray-400">No items found in the receipt</p>

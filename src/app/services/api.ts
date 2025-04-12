@@ -73,6 +73,15 @@ export const receiptService = {
     return response.json();
   },
 
+  // Get receipts for a specific session
+  getReceiptsForSession: async (sessionId: string) => {
+    const response = await fetch(`/api/receipts?sessionId=${sessionId}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch receipts for session');
+    }
+    return response.json();
+  },
+
   // Get a specific receipt
   getReceipt: async (id: string) => {
     const response = await fetch(`/api/receipts/${id}`);
