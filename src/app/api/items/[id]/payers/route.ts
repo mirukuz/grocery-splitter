@@ -2,15 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 
 // POST /api/items/[id]/payers - Assign a person to an item
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> | { id: string } }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     // Parse request body
     const body = await request.json();
     const { personId } = body;
     
-    // Resolve params
-    const resolvedParams = 'then' in params ? await params : params;
-    const itemId = resolvedParams.id;
+    // Get the item ID from params
+    const itemId = params.id;
 
     // Validate personId
     if (!personId) {
@@ -107,12 +109,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 }
 
 // DELETE /api/items/[id]/payers - Remove a person from an item
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> | { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const { searchParams } = new URL(request.url);
     const personId = searchParams.get('personId');
-    const resolvedParams = 'then' in params ? await params : params;
-    const itemId = resolvedParams.id;
+    const itemId = params.id;
 
     if (!personId) {
       return NextResponse.json(

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useSessionStore from '../../store/sessionStore';
 import useReceiptStore from '../../store/receiptStore';
-import { receiptService } from '../../services/api';
 import ReceiptUploader from '../../components/ReceiptUploader';
 import ReceiptItemsList from '../../components/ReceiptItemsList';
 import PeopleManager from '../../components/PeopleManager';
@@ -17,7 +16,7 @@ export default function SessionDetail() {
   const sessionId = params.id as string;
   
   const { currentSession, fetchSession, error: sessionError } = useSessionStore();
-  const { receipt, error: receiptError, reset, setReceipt, setError, fetchPeople } = useReceiptStore();
+  const { receipt, error: receiptError, reset, fetchPeople } = useReceiptStore();
   
   const [activeTab, setActiveTab] = useState<'upload' | 'items' | 'people' | 'summary'>('upload');
 

@@ -31,9 +31,39 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+To deploy the Household Calculator application on Vercel, follow these steps:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Push your code to a Git repository** (GitHub, GitLab, or Bitbucket)
+
+2. **Connect your repository to Vercel**:
+   - Go to [Vercel](https://vercel.com/new) and sign in or create an account
+   - Import your repository
+   - Select the repository containing your Household Calculator code
+
+3. **Configure the project**:
+   - Framework Preset: Next.js
+   - Root Directory: ./
+   - Build Command: npm run build
+   - Output Directory: .next
+
+4. **Add environment variables**:
+   - Add your `DATABASE_URL` environment variable for your PostgreSQL database
+   - You can use [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres) or any other PostgreSQL provider
+
+5. **Deploy**:
+   - Click 'Deploy' and wait for the build to complete
+
+6. **Run database migrations**:
+   - After deployment, you'll need to run the Prisma migrations
+   - In the Vercel dashboard, go to your project settings
+   - Navigate to the 'Deployments' tab
+   - Click on the three dots next to your latest deployment and select 'Redeploy'
+   - Before redeploying, add the following build command:
+     ```
+     npx prisma migrate deploy && npm run build
+     ```
+
+Your Household Calculator application will now be deployed and accessible via the Vercel URL.
 
 
 ## DB migration
