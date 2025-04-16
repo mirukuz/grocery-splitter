@@ -1,9 +1,15 @@
 "use client";
 
 import { useState } from 'react';
-import { TrashIcon, PencilIcon, UserPlusIcon, UserMinusIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, PencilIcon, UserPlusIcon, UserMinusIcon, TagIcon } from '@heroicons/react/24/outline';
 import useReceiptStore from '../store/receiptStore';
 import { ReceiptItem } from '../types';
+
+// Helper function to check if an item is a discount item (like 'WOW 108% OFFER')
+const isDiscountItem = (name: string): boolean => {
+  const discountRegex = /(WOW|DISCOUNT|OFFER)\s+\d+(%|\s*%|\s*OFFER|\s*OFF)/i;
+  return discountRegex.test(name);
+};
 
 export default function ReceiptItemsList() {
   const { receipt, people, updateItem, removeItem, assignPayerToItem, removePayerFromItem } = useReceiptStore();
@@ -26,7 +32,8 @@ export default function ReceiptItemsList() {
   const handleEditItem = (item: ReceiptItem) => {
     setEditingItemId(item.id);
     setNewItemName(item.name);
-    setNewItemPrice(item.price.toString());
+    // For discount items, we want to edit the absolute value to make it easier for users
+    setNewItemPrice(Math.abs(item.price).toString());
     setNewItemNote(item.notes);
   };
 
@@ -34,9 +41,12 @@ export default function ReceiptItemsList() {
     const priceValue = parseFloat(newItemPrice);
     if (isNaN(priceValue)) return;
 
+    // If it's a discount item, we store it as a negative value
+    const finalPrice = isDiscountItem(newItemName) ? -Math.abs(priceValue) : Math.abs(priceValue);
+
     updateItem(id, {
       name: newItemName,
-      price: priceValue,
+      price: finalPrice,
       notes: newItemNote
     });
 
@@ -144,10 +154,15 @@ export default function ReceiptItemsList() {
                   // View mode
                   <>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">{item.name}</div>
+                      <div className={`text-sm font-medium flex items-center ${isDiscountItem(item.name) ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+                        {isDiscountItem(item.name) && <TagIcon className="h-4 w-4 mr-1 inline-block" />}
+                        {item.name}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 dark:text-white">${item.price.toFixed(2)}</div>
+                      <div className={`text-sm font-medium ${isDiscountItem(item.name) ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+                        {isDiscountItem(item.name) ? '−' : ''}${Math.abs(item.price).toFixed(2)}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -266,8 +281,13 @@ export default function ReceiptItemsList() {
               <div>
                 <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
                   <div>
-                    <h3 className="text-base font-medium text-gray-900 dark:text-white">{item.name}</h3>
-                    <p className="text-sm text-gray-900 dark:text-white font-semibold">${item.price.toFixed(2)}</p>
+                    <h3 className={`text-base font-medium flex items-center ${isDiscountItem(item.name) ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+                      {isDiscountItem(item.name) && <TagIcon className="h-4 w-4 mr-1 inline-block" />}
+                      {item.name}
+                    </h3>
+                    <p className={`text-sm font-semibold ${isDiscountItem(item.name) ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+                      ${isDiscountItem(item.name) ? '−' : ''}${Math.abs(item.price).toFixed(2)}
+                    </p>
                   </div>
                   <div className="flex space-x-2">
                     <button
